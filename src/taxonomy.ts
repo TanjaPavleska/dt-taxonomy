@@ -113,3 +113,139 @@ export class Taxonomy {
   }
 }
 
+// Recommendation types and categories
+export const RecommendationCategory = {
+  Technical: 'Technical',
+  Operational: 'Operational',
+  Strategic: 'Strategic',
+  Security: 'Security',
+  Compliance: 'Compliance',
+  Investment: 'Investment',
+} as const;
+
+export const RecommendationPriority = {
+  Critical: 'Critical',
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+
+export const InterventionType = {
+  Immediate: 'Immediate',
+  ShortTerm: 'Short-term',
+  MidTerm: 'Mid-term',
+  LongTerm: 'Long-term',
+} as const;
+
+export type RecommendationCategory = typeof RecommendationCategory[keyof typeof RecommendationCategory];
+export type RecommendationPriority = typeof RecommendationPriority[keyof typeof RecommendationPriority];
+export type InterventionType = typeof InterventionType[keyof typeof InterventionType];
+
+export interface Recommendation {
+  id: string;
+  title: string;
+  description: string;
+  category: RecommendationCategory;
+  priority: RecommendationPriority;
+  interventionType: InterventionType;
+  estimatedCost?: string;
+  expectedBenefits: string[];
+  implementationSteps: string[];
+  riskFactors: string[];
+  relatedDimensions: string[];
+  feasibilityScore: number; // 0-100
+  impactScore: number; // 0-100
+}
+
+export interface Improvement {
+  id: string;
+  title: string;
+  description: string;
+  targetDimension: string;
+  currentState: string;
+  proposedState: string;
+  justification: string;
+  prerequisites: string[];
+  successMetrics: string[];
+  timeframe: InterventionType;
+}
+
+export class Result {
+  recommendations: Recommendation[] = [];
+  improvements: Improvement[] = [];
+  overallMaturityScore: number = 0;
+  dimensionScores: { [dimension: string]: number } = {};
+  summary: string = '';
+  generatedAt: Date;
+
+  constructor() {
+    this.generatedAt = new Date();
+  }
+
+  addRecommendation(recommendation: Recommendation): void {
+    this.recommendations.push(recommendation);
+  }
+
+  addImprovement(improvement: Improvement): void {
+    this.improvements.push(improvement);
+  }
+
+  getRecommendationsByCategory(category: RecommendationCategory): Recommendation[] {
+    return this.recommendations.filter(r => r.category === category);
+  }
+
+  getRecommendationsByPriority(priority: RecommendationPriority): Recommendation[] {
+    return this.recommendations.filter(r => r.priority === priority);
+  }
+
+  getCriticalRecommendations(): Recommendation[] {
+    return this.getRecommendationsByPriority(RecommendationPriority.Critical);
+  }
+
+  getHighPriorityRecommendations(): Recommendation[] {
+    return this.getRecommendationsByPriority(RecommendationPriority.High);
+  }
+
+  getSortedRecommendations(): Recommendation[] {
+    const priorityOrder = {
+      [RecommendationPriority.Critical]: 4,
+      [RecommendationPriority.High]: 3,
+      [RecommendationPriority.Medium]: 2,
+      [RecommendationPriority.Low]: 1,
+    };
+
+    return this.recommendations.sort((a, b) => {
+      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+      if (priorityDiff !== 0) return priorityDiff;
+      return b.impactScore - a.impactScore;
+    });
+  }
+
+  getImprovementsByTimeframe(timeframe: InterventionType): Improvement[] {
+    return this.improvements.filter(i => i.timeframe === timeframe);
+  }
+
+  calculateOverallScore(): number {
+    if (Object.keys(this.dimensionScores).length === 0) return 0;
+
+    const scores = Object.values(this.dimensionScores);
+    this.overallMaturityScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    return this.overallMaturityScore;
+  }
+
+  generateSummary(): string {
+    const criticalCount = this.getCriticalRecommendations().length;
+    const highCount = this.getHighPriorityRecommendations().length;
+    const totalRecommendations = this.recommendations.length;
+    const totalImprovements = this.improvements.length;
+
+    this.summary = `Digital Twin Taxonomy Analysis Results:
+- Overall Maturity Score: ${this.overallMaturityScore.toFixed(1)}/100
+- Total Recommendations: ${totalRecommendations} (${criticalCount} Critical, ${highCount} High Priority)
+- Total Improvements: ${totalImprovements}
+- Analysis completed on: ${this.generatedAt.toLocaleDateString()}`;
+
+    return this.summary;
+  }
+}
+

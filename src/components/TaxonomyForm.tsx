@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import {
   Taxonomy,
+  Result,
   DataLink,
   FunctionalRole,
   SynchronizationFrequency,
@@ -16,11 +17,16 @@ import {
   LifecyclePositioning,
   ApplicationDomain,
   CyberPhysicalSecurityIntegration,
+  RecommendationPriority,
 } from '../taxonomy';
+import { TaxonomyRules } from '@/taxonomy_rules';
+
+
 
 const TaxonomyForm: React.FC = () => {
   const [taxonomy, setTaxonomy] = useState(new Taxonomy());
   const [showResult, setShowResult] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<Result | null>(null);
 
   // Radio button handlers
   const handleDataLinkChange = (value: string) => {
@@ -113,12 +119,16 @@ const TaxonomyForm: React.FC = () => {
   };
 
   const handleSubmit = () => {
+    const rules = new TaxonomyRules();
+    const result = rules.transformTaxonomyToResult(taxonomy);
+    setAnalysisResult(result);
     setShowResult(true);
   };
 
   const handleReset = () => {
     setTaxonomy(new Taxonomy());
     setShowResult(false);
+    setAnalysisResult(null);
   };
 
   return (
@@ -286,17 +296,216 @@ const TaxonomyForm: React.FC = () => {
           </div>
 
           {/* Results */}
-          {showResult && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Taxonomy Classification Result</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
-                  {taxonomy.getSummary()}
-                </pre>
-              </CardContent>
-            </Card>
+          {showResult && analysisResult && (
+            <div className="space-y-6">
+              {/* Overview Card */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Digital Twin Analysis Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{analysisResult.overallMaturityScore.toFixed(1)}/100</div>
+                      <div className="text-sm text-gray-600">Overall Maturity Score</div>
+                    </div>
+                    <div className="text-center p-4 bg-red-50 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">{analysisResult.getCriticalRecommendations().length}</div>
+                      <div className="text-sm text-gray-600">Critical Issues</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{analysisResult.improvements.length}</div>
+                      <div className="text-sm text-gray-600">Improvement Opportunities</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">{analysisResult.summary}</p>
+                </CardContent>
+              </Card>
+
+              {/* Dimension Scores */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dimension Maturity Scores</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(analysisResult.dimensionScores).map(([dimension, score]) => (
+                      <div key={dimension} className="flex items-center justify-between p-3 border rounded-lg">
+                        <span className="text-sm font-medium capitalize">{dimension.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                score >= 80 ? 'bg-green-500' :
+                                score >= 60 ? 'bg-yellow-500' :
+                                score >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(score, 100)}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-bold">{score.toFixed(0)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Critical Recommendations */}
+              {analysisResult.getCriticalRecommendations().length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-red-600">🚨 Critical Recommendations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analysisResult.getCriticalRecommendations().map((rec, index) => (
+                        <div key={rec.id} className="border-l-4 border-red-500 pl-4 p-3 bg-red-50 rounded-r-lg">
+                          <h4 className="font-semibold text-red-800">{index + 1}. {rec.title}</h4>
+                          <p className="text-sm text-gray-700 mt-1">{rec.description}</p>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <span className="bg-red-100 px-2 py-1 rounded mr-2">{rec.category}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded mr-2">{rec.interventionType}</span>
+                            {rec.estimatedCost && <span className="bg-blue-100 px-2 py-1 rounded">{rec.estimatedCost}</span>}
+                          </div>
+                          {rec.expectedBenefits.length > 0 && (
+                            <div className="mt-2">
+                              <span className="text-xs font-medium text-gray-600">Expected Benefits:</span>
+                              <ul className="text-xs text-gray-600 ml-4 list-disc">
+                                {rec.expectedBenefits.map((benefit, i) => <li key={i}>{benefit}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* High Priority Recommendations */}
+              {analysisResult.getHighPriorityRecommendations().length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-orange-600">⚡ High Priority Recommendations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analysisResult.getHighPriorityRecommendations().map((rec, index) => (
+                        <div key={rec.id} className="border-l-4 border-orange-500 pl-4 p-3 bg-orange-50 rounded-r-lg">
+                          <h4 className="font-semibold text-orange-800">{index + 1}. {rec.title}</h4>
+                          <p className="text-sm text-gray-700 mt-1">{rec.description}</p>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <span className="bg-orange-100 px-2 py-1 rounded mr-2">{rec.category}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded mr-2">{rec.interventionType}</span>
+                            {rec.estimatedCost && <span className="bg-blue-100 px-2 py-1 rounded">{rec.estimatedCost}</span>}
+                          </div>
+                          {rec.expectedBenefits.length > 0 && (
+                            <div className="mt-2">
+                              <span className="text-xs font-medium text-gray-600">Expected Benefits:</span>
+                              <ul className="text-xs text-gray-600 ml-4 list-disc">
+                                {rec.expectedBenefits.map((benefit, i) => <li key={i}>{benefit}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Improvements */}
+              {analysisResult.improvements.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-blue-600">🎯 Improvement Opportunities</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analysisResult.improvements.map((imp, index) => (
+                        <div key={imp.id} className="border-l-4 border-blue-500 pl-4 p-3 bg-blue-50 rounded-r-lg">
+                          <h4 className="font-semibold text-blue-800">{index + 1}. {imp.title}</h4>
+                          <p className="text-sm text-gray-700 mt-1">{imp.description}</p>
+                          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="font-medium text-gray-600">Current State:</span>
+                              <span className="ml-1 bg-gray-100 px-2 py-1 rounded">{imp.currentState}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">Target State:</span>
+                              <span className="ml-1 bg-green-100 px-2 py-1 rounded">{imp.proposedState}</span>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <span className="bg-blue-100 px-2 py-1 rounded mr-2">{imp.targetDimension}</span>
+                            <span className="bg-gray-100 px-2 py-1 rounded">{imp.timeframe}</span>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-2 italic">{imp.justification}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* All Other Recommendations */}
+              {analysisResult.recommendations.filter(r =>
+                r.priority !== RecommendationPriority.Critical &&
+                r.priority !== RecommendationPriority.High
+              ).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-gray-600">📋 Additional Recommendations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {analysisResult.recommendations
+                        .filter(r => r.priority !== RecommendationPriority.Critical && r.priority !== RecommendationPriority.High)
+                        .map((rec, index) => (
+                        <div key={rec.id} className="border-l-4 border-gray-400 pl-4 p-3 bg-gray-50 rounded-r-lg">
+                          <h4 className="font-semibold text-gray-800">{index + 1}. {rec.title}</h4>
+                          <p className="text-sm text-gray-700 mt-1">{rec.description}</p>
+                          <div className="mt-2 text-xs text-gray-600">
+                            <span className="bg-gray-200 px-2 py-1 rounded mr-2">{rec.priority}</span>
+                            <span className="bg-gray-200 px-2 py-1 rounded mr-2">{rec.category}</span>
+                            <span className="bg-gray-200 px-2 py-1 rounded">{rec.interventionType}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* No Issues - Success Message */}
+              {analysisResult.recommendations.length === 0 && (
+                <Card className="border-green-200">
+                  <CardContent className="text-center py-8">
+                    <div className="text-6xl mb-4">✅</div>
+                    <h3 className="text-xl font-semibold text-green-600 mb-2">Excellent Digital Twin Configuration!</h3>
+                    <p className="text-gray-600">Your digital twin implementation shows high maturity across all dimensions. Consider exploring advanced cognitive capabilities or cutting-edge features.</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Raw Data Toggle */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Raw Taxonomy Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <details className="text-sm">
+                    <summary className="cursor-pointer font-medium text-gray-600 hover:text-gray-800">
+                      Show/Hide Raw JSON Data
+                    </summary>
+                    <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-xs mt-2">
+                      {taxonomy.getSummary()}
+                    </pre>
+                  </details>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </CardContent>
       </Card>
