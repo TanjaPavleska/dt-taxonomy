@@ -366,7 +366,6 @@ const TaxonomyForm: React.FC = () => {
                           <div className="mt-2 text-xs text-gray-600">
                             <span className="bg-red-100 px-2 py-1 rounded mr-2">{rec.category}</span>
                             <span className="bg-gray-100 px-2 py-1 rounded mr-2">{rec.interventionType}</span>
-                            {rec.estimatedCost && <span className="bg-blue-100 px-2 py-1 rounded">{rec.estimatedCost}</span>}
                           </div>
                           {rec.expectedBenefits.length > 0 && (
                             <div className="mt-2">
@@ -398,7 +397,6 @@ const TaxonomyForm: React.FC = () => {
                           <div className="mt-2 text-xs text-gray-600">
                             <span className="bg-orange-100 px-2 py-1 rounded mr-2">{rec.category}</span>
                             <span className="bg-gray-100 px-2 py-1 rounded mr-2">{rec.interventionType}</span>
-                            {rec.estimatedCost && <span className="bg-blue-100 px-2 py-1 rounded">{rec.estimatedCost}</span>}
                           </div>
                           {rec.expectedBenefits.length > 0 && (
                             <div className="mt-2">

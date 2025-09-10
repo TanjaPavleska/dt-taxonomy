@@ -148,7 +148,6 @@ export interface Recommendation {
   category: RecommendationCategory;
   priority: RecommendationPriority;
   interventionType: InterventionType;
-  estimatedCost?: string;
   expectedBenefits: string[];
   implementationSteps: string[];
   riskFactors: string[];
