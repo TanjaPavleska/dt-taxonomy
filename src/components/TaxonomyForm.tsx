@@ -22,8 +22,7 @@ import {
 import { TaxonomyRules } from '@/taxonomy_rules';
 import DimensionRadarChart from './DimensionRadarChart';
 import CompactRadarChart from './CompactRadarChart';
-
-
+import TaxonomySidebar from './TaxonomySidebar';
 
 const TaxonomyForm: React.FC = () => {
   const [taxonomy, setTaxonomy] = useState(new Taxonomy());
@@ -133,11 +132,41 @@ const TaxonomyForm: React.FC = () => {
     setAnalysisResult(null);
   };
 
+  const handleLoadTaxonomy = (loadedTaxonomy: Taxonomy, loadedResult?: Result) => {
+    console.log('Loading taxonomy:', loadedTaxonomy);
+    console.log('Loading result:', loadedResult);
+
+    setTaxonomy(loadedTaxonomy);
+    if (loadedResult) {
+      // Verify that the loaded result has the required methods
+      if (typeof loadedResult.getCriticalRecommendations === 'function') {
+        console.log('Result methods successfully restored');
+      } else {
+        console.error('Result methods missing - this will cause errors!');
+      }
+
+      setAnalysisResult(loadedResult);
+      setShowResult(true);
+    } else {
+      setAnalysisResult(null);
+      setShowResult(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Sidebar */}
+      <TaxonomySidebar
+        onLoadTaxonomy={handleLoadTaxonomy}
+        currentTaxonomy={taxonomy}
+        currentResult={analysisResult}
+      />
+
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Digital Twin Taxonomy Classifier</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-2xl font-bold">Digital Twin Taxonomy Classifier</CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="space-y-8">
 
