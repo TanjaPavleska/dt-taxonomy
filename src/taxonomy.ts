@@ -169,7 +169,7 @@ export interface Improvement {
   timeframe: InterventionType;
 }
 
-export class Result {
+export class  Result {
   recommendations: Recommendation[] = [];
   improvements: Improvement[] = [];
   overallMaturityScore: number = 0;

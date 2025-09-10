@@ -20,6 +20,8 @@ import {
   RecommendationPriority,
 } from '../taxonomy';
 import { TaxonomyRules } from '@/taxonomy_rules';
+import DimensionRadarChart from './DimensionRadarChart';
+import CompactRadarChart from './CompactRadarChart';
 
 
 
@@ -304,7 +306,7 @@ const TaxonomyForm: React.FC = () => {
                   <CardTitle>Digital Twin Analysis Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{analysisResult.overallMaturityScore.toFixed(1)}/100</div>
                       <div className="text-sm text-gray-600">Overall Maturity Score</div>
@@ -317,6 +319,15 @@ const TaxonomyForm: React.FC = () => {
                       <div className="text-2xl font-bold text-green-600">{analysisResult.improvements.length}</div>
                       <div className="text-sm text-gray-600">Improvement Opportunities</div>
                     </div>
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <div className="text-sm text-gray-600 text-center mb-2">Maturity Profile</div>
+                      <CompactRadarChart
+                        dimensionScores={analysisResult.dimensionScores}
+                        size="sm"
+                        showGrid={true}
+                        showAxes={false}
+                      />
+                    </div>
                   </div>
                   <p className="text-sm text-gray-600">{analysisResult.summary}</p>
                 </CardContent>
@@ -328,25 +339,35 @@ const TaxonomyForm: React.FC = () => {
                   <CardTitle>Dimension Maturity Scores</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(analysisResult.dimensionScores).map(([dimension, score]) => (
-                      <div key={dimension} className="flex items-center justify-between p-3 border rounded-lg">
-                        <span className="text-sm font-medium capitalize">{dimension.replace(/([A-Z])/g, ' $1').trim()}</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full ${
-                                score >= 80 ? 'bg-green-500' :
-                                score >= 60 ? 'bg-yellow-500' :
-                                score >= 40 ? 'bg-orange-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${Math.min(score, 100)}%` }}
-                            ></div>
+                  {/* Radar Chart Visualization */}
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium mb-3 text-gray-800">Maturity Overview</h3>
+                    <DimensionRadarChart dimensionScores={analysisResult.dimensionScores} />
+                  </div>
+
+                  {/* Detailed Scores List */}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium mb-3 text-gray-800">Detailed Scores</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(analysisResult.dimensionScores).map(([dimension, score]) => (
+                        <div key={dimension} className="flex items-center justify-between p-3 border rounded-lg">
+                          <span className="text-sm font-medium capitalize">{dimension.replace(/([A-Z])/g, ' $1').trim()}</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  score >= 80 ? 'bg-green-500' :
+                                  score >= 60 ? 'bg-yellow-500' :
+                                  score >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                                }`}
+                                style={{ width: `${Math.min(score, 100)}%` }}
+                              ></div>
+                            </div>
+                            <span className="text-sm font-bold">{score.toFixed(0)}</span>
                           </div>
-                          <span className="text-sm font-bold">{score.toFixed(0)}</span>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
