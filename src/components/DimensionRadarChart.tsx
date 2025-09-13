@@ -34,22 +34,23 @@ const DimensionRadarChart: React.FC<DimensionRadarChartProps> = ({ dimensionScor
   // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const score = Math.round(payload[0].value);
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-semibold text-gray-800">{label}</p>
           <p className="text-blue-600">
-            Score: <span className="font-bold">{payload[0].value}/100</span>
+            Score: <span className="font-bold">{score}/100</span>
           </p>
           <div className="mt-1">
             <div className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-              payload[0].value >= 80 ? 'bg-green-100 text-green-800' :
-              payload[0].value >= 60 ? 'bg-yellow-100 text-yellow-800' :
-              payload[0].value >= 40 ? 'bg-orange-100 text-orange-800' :
+              score >= 80 ? 'bg-green-100 text-green-800' :
+              score >= 60 ? 'bg-yellow-100 text-yellow-800' :
+              score >= 40 ? 'bg-orange-100 text-orange-800' :
               'bg-red-100 text-red-800'
             }`}>
-              {payload[0].value >= 80 ? 'Excellent' :
-               payload[0].value >= 60 ? 'Good' :
-               payload[0].value >= 40 ? 'Fair' : 'Needs Improvement'}
+              {score >= 80 ? 'Excellent' :
+               score >= 60 ? 'Good' :
+               score >= 40 ? 'Fair' : 'Needs Improvement'}
             </div>
           </div>
         </div>

@@ -203,17 +203,17 @@ const TaxonomySidebar: React.FC<TaxonomySidebarProps> = ({
             Saved Taxonomies
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-96 sm:max-w-lg">
-          <SheetHeader>
+        <SheetContent side="left" className="w-96 sm:max-w-lg h-full flex flex-col">
+          <SheetHeader className="flex-shrink-0">
             <SheetTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               Saved Taxonomies ({savedTaxonomies.length})
             </SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-4 mt-6">
+          <div className="flex flex-col h-full mt-6">
             {/* Save Current Section */}
-            <Card>
+            <Card className="flex-shrink-0">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Current Session</CardTitle>
               </CardHeader>
@@ -235,7 +235,7 @@ const TaxonomySidebar: React.FC<TaxonomySidebarProps> = ({
             </Card>
 
             {/* Search and Filter */}
-            <div className="space-y-2">
+            <div className="space-y-2 mt-4 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -261,9 +261,10 @@ const TaxonomySidebar: React.FC<TaxonomySidebarProps> = ({
             </div>
 
             {/* Saved Taxonomies List */}
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {filteredTaxonomies.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+            <div className="flex-1 min-h-0 mt-4">
+              <div className="space-y-3 h-full overflow-y-auto pr-2">
+                {filteredTaxonomies.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 h-full flex items-center justify-center">
                   {savedTaxonomies.length === 0 ? (
                     <>
                       <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
@@ -335,6 +336,7 @@ const TaxonomySidebar: React.FC<TaxonomySidebarProps> = ({
                   </Card>
                 ))
               )}
+              </div>
             </div>
           </div>
         </SheetContent>
