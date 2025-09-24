@@ -20,7 +20,7 @@ yarn preview
 
 ## Project Architecture
 
-This is a React-based Digital Twin Taxonomy Classifier for power grid systems. The application allows users to characterize their digital twin implementations across 10 dimensions and receives AI-powered recommendations.
+This is a React-based Digital Twin Taxonomy Classifier for power grid systems. The application allows users to characterize their digital twin implementations across 10 dimensions and receives recommendations based on ISO/IEC 30186.
 
 ### Core Architecture
 
